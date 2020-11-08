@@ -1,4 +1,5 @@
 import re
+from abc import ABC
 from nltk.stem.snowball import SnowballStemmer
 from nltk.tokenize.punkt import PunktSentenceTokenizer
 from nltk.tokenize.regexp import  WhitespaceTokenizer
@@ -23,51 +24,95 @@ def clear_url(text):
 
 # чистим "левые" символы, кроме !?.; - которые могут означать конец предложения.
 def clear_symb(text):
-    return re.sub(r"[~`@«»#$%^&*()_+=\-:№\"\[\]\\/|',\n]", '', text)
+    return re.sub(r"[~`@«»#$%^&*()_—+=\-:№\"\[\]\\/|',\n]", '', text)
 
 
-# чистим !?.;.
+# чистим символы конца строки  !?.;.
 def clear_endings(text):
     return re.sub(r"[!?.;]", '', text)
 
 
-def preprocess_text(text):
-    """
-    предобработка, токенизация по предложениям, удаление дублей.
+class TextPreprocessor(ABC):
+    #  базовый класс, на будущее (если понадобятся другие методы предобработки)
+    _processing_pipeline = None #  пока не заморачиваюсь, тоже закладка на будущее
 
-    Args:
-        text ([type]): [description]
-    """
+    def process(self, data):
+        raise NotImplementedError 
 
-    #text = text.lower()
 
-    # убираем числа, email, гиперрсылки
+class TextPlainPreprocessor(TextPreprocessor):
+    def process(self, text):
+        """
+        предобработка, токенизация по словам,  удаление дублей.
+        выдает сплошной (plain) текст, для метода шиндлов
 
-    #text = text.encode('utf-8')
+        Args:
+            text ([type]): [description]
+        """
+        #text = text.encode('utf-8')
 
-    text = clear_emails(text)
-    text = clear_url(text)
-    text = clear_digits(text)
-    text = clear_symb(text)
+        # убираем числа, email, гиперрсылки
+        
+        text = clear_emails(text)
+        text = clear_url(text)
+        text = clear_digits(text)
+        text = clear_symb(text)
 
-    # выделяем предложения
-    sentence_tokenizer = PunktSentenceTokenizer()
-    text = sentence_tokenizer.tokenize(text)
+    
+        # разбиваем по словам, чистим от оставшейся пунктуации и stopwords
 
-    cleaned_text = []
-    stop_words = set(stopwords.words('russian'))
+        stop_words = set(stopwords.words('russian'))
+        tokenizer = WhitespaceTokenizer()
+        stemmer = SnowballStemmer('russian')
 
-    # разбиваем по словам, чистим от оставшейся пунктуации и stopwords
-    tokenizer = WhitespaceTokenizer()
-    stemmer = SnowballStemmer('russian')
+        punct_cleaned_text = clear_endings(text)  # служ. символы конца предложения
+        tokenized_text = tokenizer.tokenize(punct_cleaned_text)  # раскидали по словам, только для отчистки
+        stpw_clean_text = [word for word in tokenized_text if not word in stop_words]
+        stemmed_text = [stemmer.stem(word) for word in stpw_clean_text]  # проеборазуем в ед. число или корень слова
+        clean_text = ' '.join(stemmed_text)  # собрали обратно в предложение-сторку для хэшировнаия
+ 
+        return clean_text
 
-    for sentence in text:
-        punct_cleaned_sent = clear_endings(sentence)  # служ. символы конца предложения
-        tokenized_sent = tokenizer.tokenize(punct_cleaned_sent)  # раскидали по словам, только для отчистки
-        stpw_clean_sentence = [word for word in tokenized_sent if not word in stop_words]
-        stemmed_sentence = [stemmer.stem(word) for word in stpw_clean_sentence]  # проеборазуем в ед. число или корень слова
-        clean_sentence = ' '.join(stemmed_sentence)  # собрали обратно в предложение-сторку для хэшировнаия
 
-        cleaned_text.append(clean_sentence)
+class TextSentencePreprocessor(TextPreprocessor):
+        def process(self, text):
+            """
+            предобработка, токенизация по предложениям, удаление дублей.
+            выдает список предложений (для векторного метода, на будущее)
+            Args:
+                text ([type]): [description]
+            """
 
-    return cleaned_text
+            #text = text.lower()
+
+            # убираем числа, email, гиперрсылки
+
+            #text = text.encode('utf-8')
+
+            text = clear_emails(text)
+            text = clear_url(text)
+            text = clear_digits(text)
+            text = clear_symb(text)
+
+            # выделяем предложения
+            sentence_tokenizer = PunktSentenceTokenizer()
+            text = sentence_tokenizer.tokenize(text)
+
+            cleaned_text = []
+            stop_words = set(stopwords.words('russian'))
+
+            # разбиваем по словам, чистим от оставшейся пунктуации и stopwords
+            tokenizer = WhitespaceTokenizer()
+            stemmer = SnowballStemmer('russian')
+
+            for sentence in text:
+                punct_cleaned_sent = clear_endings(sentence)  # служ. символы конца предложения
+                tokenized_sent = tokenizer.tokenize(punct_cleaned_sent)  # раскидали по словам, только для отчистки
+                stpw_clean_sentence = [word for word in tokenized_sent if not word in stop_words]
+                stemmed_sentence = [stemmer.stem(word) for word in stpw_clean_sentence]  # проеборазуем в ед. число или корень слова
+                clean_sentence = ' '.join(stemmed_sentence)  # собрали обратно в предложение-сторку для хэшировнаия
+
+                cleaned_text.append(clean_sentence)
+
+            return cleaned_text
+

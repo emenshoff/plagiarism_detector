@@ -1,1 +1,1 @@
-venv, db.sqlite3
+venv, db.sqlite3, __pychache__, *.pyc
