@@ -38,11 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'api',
+    'django.contrib.staticfiles',    
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_auth',
+    'api',
+    'engine',
+    #'rest_auth',
 
 ]
 
@@ -127,10 +128,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-FLASK_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES' : [
-        'rest_framework.authentication.TokenAuthentication'
-        #'rest_framework.authentication.BasicAuthentication',
-        #'rest_framework.authentication.SessionAuthentication',
-    ]
-}
+# FLASK_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES' : [
+#         'rest_framework.authentication.TokenAuthentication'
+#         #'rest_framework.authentication.BasicAuthentication',
+#         #'rest_framework.authentication.SessionAuthentication',
+#     ]
+# }
