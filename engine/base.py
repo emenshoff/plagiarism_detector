@@ -68,6 +68,7 @@ class TextCorpus:
         matched_texts = []
         text = self._text_preprocessor.process(text)
         data = self._data_adapter.convert(text)
+        
         for item in self._corpus:
             if self._data_adapter.is_matched(data, item.stored_text):
                 #resemblance = self._data_adapter.calc_resemblance(data, item.stored_text())

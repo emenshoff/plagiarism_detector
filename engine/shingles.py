@@ -16,17 +16,19 @@ class ShingleDataAdapter(DataAdapter):
     Returns:
         [type]: [description]
     """
-    
+
     def convert(self, text, hash_fn=hashlib.md5):
         # генерация шинглов с настраиваемым сдвигом
         shingles = []
+        #text = text.encode('utf-8')
         txt_len = len(text)
         if txt_len > SHINGLE_LEN + SHINGLE_PADDING:
             for x in range(len(text) - (SHINGLE_LEN + SHINGLE_PADDING - 1)):
-                shingles.append(hash_fn(word) for word in text[x : x + SHINGLE_PADDING + SHINGLE_LEN ])
+                shingles_frame =  [hash_fn(word.encode('utf-8')).digest() for word in text[x : x + SHINGLE_PADDING + SHINGLE_LEN ]]
+                shingles.extend(shingles_frame)
         else:
-            shingles.append(hash_fn(text))
-        #print(shingles)
+            shingles.append(hash_fn(text.encode('utf-8')).digest())
+ 
         return shingles
 
     def calc_resemblance(self, text1, text2): # сравниваю множества 

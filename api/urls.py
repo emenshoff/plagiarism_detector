@@ -4,10 +4,9 @@ from django.urls import path
 from django.urls import include
 
 
-from .views import PlagView
+from .views import api_info, process_text
 
 urlpatterns = [   
-    #path('', TestView.as_view(), name='api_help_url'),
-    #path('detail/<int:pk>', TestView.as_view()),
-    path('', PlagView.as_view()),
+    path('process/', process_text, name='api_process_url'),   
+    path('', api_info, name='api_info_url'),
 ]
