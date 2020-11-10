@@ -5,29 +5,32 @@ from .base import TextModel, TextCorpus, DataAdapter
 
 from .settings import SHINGLES_METHOD_THRESHOLD
 
-SHINGLE_LEN = 5  # полагаю, можно ускорить и снизить расходы на память, если поиграться со значением "окна"
-SHINGLE_PADDING = 1 # отступ окна перекрытия при генерации шингла
+SHINGLE_LEN = 10  # полагаю, можно ускорить и снизить расходы на память, если поиграться со значением "окна"
+SHINGLE_PADDING = 2 # отступ окна перекрытия при генерации шингла
 
 
 class ShingleDataAdapter(DataAdapter):
     """
     логика и операции с шинглами
-
+    
     Returns:
         [type]: [description]
     """
 
     def convert(self, text, hash_fn=hashlib.md5):
-        # генерация шинглов с настраиваемым сдвигом
+        # генерация шинглов с настраиваемым сдвигом, на входе токенизированный текст (список строк)
         shingles = []
         #text = text.encode('utf-8')
         txt_len = len(text)
         if txt_len > SHINGLE_LEN + SHINGLE_PADDING:
-            for x in range(len(text) - (SHINGLE_LEN + SHINGLE_PADDING - 1)):
-                shingles_frame =  [hash_fn(word.encode('utf-8')).digest() for word in text[x : x + SHINGLE_PADDING + SHINGLE_LEN ]]
-                shingles.extend(shingles_frame)
+            for x in range(0, len(text) - SHINGLE_LEN + SHINGLE_PADDING, SHINGLE_PADDING):
+                shingle_text = ' '.join(text[x : x + SHINGLE_LEN ]) #  текст шингла
+                shingle_hashed = hash_fn(shingle_text.encode('utf-8')).digest() #  хэш шингла               
+                shingles.append(shingle_hashed)
         else:
-            shingles.append(hash_fn(text.encode('utf-8')).digest())
+            shingle_text = ' '.join(text)
+            shingle_hashed = hash_fn(shingle_text.encode('utf-8')).digest()         
+            shingles.append(shingle_hashed)
  
         return shingles
 

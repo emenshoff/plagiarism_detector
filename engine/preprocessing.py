@@ -41,10 +41,10 @@ class TextPreprocessor(ABC):
 
 
 class TextPlainPreprocessor(TextPreprocessor):
-    def process(self, text):
+    def process(self, text, plain_text=False):
         """
         предобработка, токенизация по словам,  удаление дублей.
-        выдает сплошной (plain) текст, для метода шиндлов
+        выдает сплошной (plain) текст, для метода шиндлов или список токенов текста
 
         Args:
             text ([type]): [description]
@@ -69,7 +69,11 @@ class TextPlainPreprocessor(TextPreprocessor):
         tokenized_text = tokenizer.tokenize(punct_cleaned_text)  # раскидали по словам, только для отчистки
         stpw_clean_text = [word for word in tokenized_text if not word in stop_words]
         stemmed_text = [stemmer.stem(word) for word in stpw_clean_text]  # проеборазуем в ед. число или корень слова
-        clean_text = ' '.join(stemmed_text)  # собрали обратно в предложение-сторку для хэшировнаия
+        clean_text = None
+        if plain_text:
+            clean_text = ' '.join(stemmed_text)  # собрали обратно в предложение-сторку для хэшировнаия
+        else:
+            clean_text = stemmed_text #  иначе возвращаем список токенов
  
         return clean_text
 
